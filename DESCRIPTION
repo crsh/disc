@@ -1,4 +1,4 @@
-Package: disc
+Package: fixedplot
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
@@ -8,6 +8,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
+Imports:
+    grid
 Suggests: 
+    ggplot2,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -1,3 +1,3 @@
-# disc (development version)
+# fixedplot (development version)
 
 * Initial CRAN submission.
