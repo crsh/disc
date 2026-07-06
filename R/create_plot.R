@@ -1,8 +1,36 @@
+#' Create plot
+#'
+#' @param data a data frame
+#' @param x_var variable mapped to the x-axis
+#' @param y_var variable mapped to the y-axis
+#' @param weird_color color of points above the diagonal
+#' @param expected_color color of points below the diagonal
+#'
+#' @returns draws a fixed-size scatter plot with marginal density plots
+#' @export
+#'
+#' @examples
+#' create_plot(mtcars, wt, mpg)
+#'
+#' test_data2 <- data.frame(foo = rnorm(100), bar = rnorm(100))
+#' create_plot(test_data2, foo, bar)
+#'
+#' create_plot(
+#'   test_data2, foo, bar,
+#'   weird_color = "blue", expected_color = "orange"
+#'   )
+
 create_plot <- function(data,
                         x_var,
                         y_var,
                         weird_color = "firebrick",
-                        expected_color = "black") {
+                        expected_color = "black"
+                        ) {
+
+  range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
+  range_y <- range(dplyr::pull(data, {{ y_var}}), na.rm = TRUE)
+  plot_range <- range(c(range_x, range_y), na.rm = TRUE)
+
   scatterplot_uncorrelated <- ggplot2::ggplot(data) +
     ggplot2::aes (x = {{ x_var }}, y = {{ y_var }}) +
     ggplot2::geom_abline(
@@ -18,20 +46,20 @@ create_plot <- function(data,
       , size = 3
     ) +
     ggplot2::scale_fill_manual(values = c(weird = weird_color, expected = expected_color)) +
-    ggplot2::coord_equal(xlim = c(2, 35), ylim = c(2, 35)) +
+    ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
     ggplot2::guides(fill = "none")
 
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::lims(x = c(-3, 4)) +
+    ggplot2::lims(x = plot_range) +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
   y_den <- ggplot2::ggplot(data) +
     ggplot2::aes(y = {{ y_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::lims(y = c(-3, 4)) +
+    ggplot2::lims(y = plot_range) +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
