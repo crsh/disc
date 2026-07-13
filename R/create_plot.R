@@ -3,8 +3,8 @@
 #' @param data a data frame
 #' @param x_var variable mapped to the x-axis
 #' @param y_var variable mapped to the y-axis
-#' @param weird_color color of points above the diagonal
-#' @param expected_color color of points below the diagonal
+#' @param upper_color color of points above the diagonal
+#' @param lower_color color of points below the diagonal
 #'
 #' @returns draws a fixed-size scatter plot with marginal density plots
 #' @export
@@ -17,14 +17,14 @@
 #'
 #' create_plot(
 #'   test_data2, foo, bar,
-#'   weird_color = "blue", expected_color = "orange"
+#'   upper_color = "blue", lower_color = "orange"
 #'   )
 
 create_plot <- function(data,
                         x_var,
                         y_var,
-                        weird_color = "firebrick",
-                        expected_color = "black"
+                        upper_color = "firebrick",
+                        lower_color = "black"
                         ) {
 
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
@@ -40,12 +40,12 @@ create_plot <- function(data,
     , color = grey(0.7)
   ) +
     ggplot2::geom_point(
-        ggplot2::aes(fill = ifelse({{ y_var}} > {{ x_var }}, "weird", "expected"))
+        ggplot2::aes(fill = ifelse({{ y_var}} > {{ x_var }}, "upper", "lower"))
       , pch = 21
       , color = "white"
       , size = 3
     ) +
-    ggplot2::scale_fill_manual(values = c(weird = weird_color, expected = expected_color)) +
+    ggplot2::scale_fill_manual(values = c(upper = upper_color, lower = lower_color)) +
     ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
     ggplot2::guides(fill = "none")
 
