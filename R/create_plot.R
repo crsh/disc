@@ -47,7 +47,12 @@ create_plot <- function(data,
     ) +
     ggplot2::scale_fill_manual(values = c(upper = upper_fill, lower = lower_fill)) +
     ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
-    ggplot2::guides(fill = "none")
+    ggplot2::labs(x = xlab, y = ylab) +
+    ggplot2::guides(fill = "none") +
+    ggplot2::theme(legend.position = legend_position,
+                   legend.background = ggplot2::element_rect(
+                     fill = "white",
+                     colour = "black"))
 
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
