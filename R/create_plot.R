@@ -10,10 +10,17 @@
 #' @export
 #'
 #' @examples
-#' create_plot(mtcars, wt, mpg)
 #'
-#' test_data2 <- data.frame(foo = rnorm(100), bar = rnorm(100))
-#' create_plot(test_data2, foo, bar)
+#' test_data <- data.frame(foo = rnorm(100), bar = rnorm(100), group = factor(rep(c("A", "B"), 50)))
+#'
+#' # Minimales Beispiel
+#' create_plot(test_data, foo, bar)
+#'
+#' # Gruppierung nach Form und Farben
+#' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange")
+#'
+#' # Achsenbeschriftung und Legendenposition
+#' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.1, 0.16))
 #'
 #' create_plot(
 #'   test_data2, foo, bar,
