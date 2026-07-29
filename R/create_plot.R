@@ -3,8 +3,8 @@
 #' @param data a data frame
 #' @param x_var variable mapped to the x-axis
 #' @param y_var variable mapped to the y-axis
-#' @param upper_color color of points above the diagonal
-#' @param lower_color color of points below the diagonal
+#' @param upper_fill color of points above the diagonal
+#' @param lower_fill color of points below the diagonal
 #'
 #' @returns draws a fixed-size scatter plot with marginal density plots
 #' @export
@@ -45,7 +45,7 @@ create_plot <- function(data,
       , color = "white"
       , size = 3
     ) +
-    ggplot2::scale_fill_manual(values = c(upper = upper_color, lower = lower_color)) +
+    ggplot2::scale_fill_manual(values = c(upper = upper_fill, lower = lower_fill)) +
     ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
     ggplot2::guides(fill = "none")
 
