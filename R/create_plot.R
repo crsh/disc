@@ -30,8 +30,8 @@
 create_plot <- function(data,
                         x_var,
                         y_var,
-                        upper_color = "firebrick",
-                        lower_color = "black"
+                        upper_fill = "firebrick",
+                        lower_fill = "black",
                         ) {
 
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
