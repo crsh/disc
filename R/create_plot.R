@@ -30,8 +30,12 @@
 create_plot <- function(data,
                         x_var,
                         y_var,
+                        shape = NULL,
                         upper_fill = "firebrick",
                         lower_fill = "black",
+                        xlab = NULL,
+                        ylab = NULL,
+                        legend_position = c(0.1, 0.16)
                         ) {
 
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
