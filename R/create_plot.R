@@ -22,10 +22,7 @@
 #' # Achsenbeschriftung und Legendenposition
 #' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.1, 0.16))
 #'
-#' create_plot(
-#'   test_data2, foo, bar,
-#'   upper_color = "blue", lower_color = "orange"
-#'   )
+
 
 create_plot <- function(data,
                         x_var,
@@ -42,28 +39,91 @@ create_plot <- function(data,
   range_y <- range(dplyr::pull(data, {{ y_var}}), na.rm = TRUE)
   plot_range <- range(c(range_x, range_y), na.rm = TRUE)
 
+if (is.null(substitute(shape))) {
+    point_layer <- ggplot2::geom_point(
+      ggplot2::aes(
+        fill = ifelse({{ y_var }} > {{ x_var }}, "upper", "lower")
+      ),
+      shape = 21,
+      color = "white",
+      size = 3
+    )
+    shape_scale <- NULL
+   } else {
+     point_layer <- ggplot2::geom_point(
+      ggplot2::aes(
+        fill = ifelse({{ y_var }} > {{ x_var }}, "upper", "lower"),
+        shape = {{ shape }}
+      ),
+      color = "white",
+      size = 3
+    )
+    shape_scale <- ggplot2::scale_shape_manual(
+      values = c(21, 22, 23, 24, 25)
+    )
+  }
   scatterplot_uncorrelated <- ggplot2::ggplot(data) +
-    ggplot2::aes (x = {{ x_var }}, y = {{ y_var }}) +
-    ggplot2::geom_abline(
-      intercept = 0
-    , slope = 1
-    , linetype = "22"
-    , color = grey(0.7)
-  ) +
-    ggplot2::geom_point(
-        ggplot2::aes(fill = ifelse({{ y_var}} > {{ x_var }}, "upper", "lower"))
-      , pch = 21
-      , color = "white"
-      , size = 3
+    ggplot2::aes(
+      x = {{ x_var }},
+      y = {{ y_var }}
     ) +
-    ggplot2::scale_fill_manual(values = c(upper = upper_fill, lower = lower_fill)) +
-    ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
-    ggplot2::labs(x = xlab, y = ylab) +
-    ggplot2::guides(fill = "none") +
-    ggplot2::theme(legend.position = legend_position,
-                   legend.background = ggplot2::element_rect(
-                     fill = "white",
-                     colour = "black"))
+    ggplot2::geom_abline(
+      intercept = 0,
+      slope = 1,
+      linetype = "22",
+      color = grey(0.7)
+    ) +
+    point_layer +
+    ggplot2::scale_fill_manual(
+      values = c(
+        upper = upper_fill,
+        lower = lower_fill
+      )
+    ) +
+    shape_scale +
+    ggplot2::coord_equal(
+      xlim = plot_range,
+      ylim = plot_range
+    ) +
+    ggplot2::labs(
+      x = xlab,
+      y = ylab
+    ) +
+    ggplot2::guides(
+      fill = "none"
+    ) +
+    ggplot2::theme(
+      legend.position = legend_position,
+      legend.background = ggplot2::element_rect(
+        fill = "white",
+        colour = "black"
+      )
+    )
+
+
+#  scatterplot_uncorrelated <- ggplot2::ggplot(data) +
+#   ggplot2::aes (x = {{ x_var }}, y = {{ y_var }}) +
+#   ggplot2::geom_abline(
+#     intercept = 0
+#   , slope = 1
+#   , linetype = "22"
+#   , color = grey(0.7)
+#  ) +
+#   ggplot2::geom_point(
+#       ggplot2::aes(fill = ifelse({{ y_var}} > {{ x_var }}, "upper", "lower"))
+#     , shape = {{ shape }}
+#     , color = "white"
+#     , size = 3
+#   ) +
+#   ggplot2::scale_fill_manual(values = c(upper = upper_fill, lower = lower_fill)) +
+#   ggplot2::scale_shape_manuel(values = c(21, 22, 23, 24, 25)) +
+#   ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
+#   ggplot2::labs(x = xlab, y = ylab) +
+#   ggplot2::guides(fill = "none") +
+#   ggplot2::theme(legend.position = legend_position,
+#                 legend.background = ggplot2::element_rect(
+#                    fill = "white",
+#                    colour = "black"))
 
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
