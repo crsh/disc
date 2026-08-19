@@ -33,14 +33,17 @@ create_plot <- function(data,
                         xlab = NULL,
                         ylab = NULL,
                         legend_position = c(0.1, 0.16),
+                        plot_range = NULL,
                         show_legend = TRUE
                         ) {
 
+if(is.null(plot_range)) {
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
   range_y <- range(dplyr::pull(data, {{ y_var}}), na.rm = TRUE)
   plot_range <- range(c(range_x, range_y), na.rm = TRUE)
+ }
 
-if (is.null(substitute(shape))) {
+if(is.null(substitute(shape))) {
     point_layer <- ggplot2::geom_point(
       ggplot2::aes(
         fill = ifelse({{ y_var }} > {{ x_var }}, "upper", "lower")
