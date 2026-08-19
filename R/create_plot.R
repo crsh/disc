@@ -32,7 +32,8 @@ create_plot <- function(data,
                         lower_fill = "black",
                         xlab = NULL,
                         ylab = NULL,
-                        legend_position = c(0.1, 0.16)
+                        legend_position = c(0.1, 0.16),
+                        show_legend = TRUE
                         ) {
 
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
@@ -61,7 +62,7 @@ if (is.null(substitute(shape))) {
     shape_scale <- ggplot2::scale_shape_manual(
       values = c(21, 22, 23, 24, 25)
     )
-  }
+   }
   scatterplot_uncorrelated <- ggplot2::ggplot(data) +
     ggplot2::aes(
       x = {{ x_var }},
@@ -124,6 +125,11 @@ if (is.null(substitute(shape))) {
 #                 legend.background = ggplot2::element_rect(
 #                    fill = "white",
 #                    colour = "black"))
+
+if (!show_legend) {
+  scatterplot_uncorrelated <- scatterplot_uncorrelated +
+    ggplot2::theme(legend.position = "none")
+}
 
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
