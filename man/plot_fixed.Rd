@@ -20,6 +20,7 @@ Fix plot
 \examples{
 p <- ggplot2::ggplot(mtcars,
 ggplot2::aes(wt, mpg)) +
+
 ggplot2::geom_point()
 plot_fixed(p)
 }
