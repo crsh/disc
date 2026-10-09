@@ -11,6 +11,7 @@ RoxygenNote: 8.0.0
 Imports:
     grid, 
     ggplot2,
+    ggdist,
     patchwork,
     cowplot,
     tibble, 

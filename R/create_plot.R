@@ -134,16 +134,26 @@ if (!show_legend) {
     ggplot2::theme(legend.position = "none")
 }
 
+x_mean <- mean(dplyr::pull(data, {{ x_var }}), na.rm = TRUE)
+x_sd <- sd(dplyr::pull(data,{{ x_var }}), na.rm = TRUE)
+
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
+    ggplot2::annotate("segment", x = x_mean - x_sd,xend = x_mean + x_sd, y = 0, yend = 0, linewidth = 1.5) +
+    ggplot2::annotate("point", x = x_mean, y = 0, size = 3, color = "black") +
     ggplot2::lims(x = plot_range) +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
+y_mean <- mean(dplyr::pull(data, {{ y_var }}), na.rm = TRUE)
+y_sd <- sd(dplyr::pull(data, {{ y_var }}), na.rm = TRUE)
+
   y_den <- ggplot2::ggplot(data) +
     ggplot2::aes(y = {{ y_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
+    ggplot2::annotate("segment", y = y_mean - y_sd, yend = y_mean + y_sd, x = 0, xend = 0, linewidth = 1.5) +
+    ggplot2::annotate("point", y = y_mean, x = 0, size = 3, color = "black") +
     ggplot2::lims(y = plot_range) +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
