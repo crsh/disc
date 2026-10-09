@@ -130,8 +130,6 @@ if (!show_legend) {
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
-# diag_den <- ggplot2::ggplot(density_df, ggplot2::aes(x = difference, y = density)) + ggplot2::geom_path() + ggplot2::theme_void()
-
  diag_den <- ggplot2::ggplot(
    density_df,
    ggplot2::aes(x = x, y = y)) +
