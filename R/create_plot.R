@@ -41,7 +41,14 @@ if(is.null(plot_range)) {
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
   range_y <- range(dplyr::pull(data, {{ y_var}}), na.rm = TRUE)
   plot_range <- range(c(range_x, range_y), na.rm = TRUE)
- }
+}
+
+difference_scores <- (dplyr::pull(data, {{ y_var }}) - dplyr::pull(data, {{ x_var }})) / sqrt(2)
+density_data <- stats::density(difference_scores, na.rm = TRUE)
+density_df <- data.frame(difference = density_data$x, density = density_data$y)
+
+density_df$x <- density_df$difference + 3 * density_df$density / sqrt(2)
+density_df$y <- -density_df$difference + 3 * density_df$density / sqrt(2)
 
 if(is.null(substitute(shape))) {
     point_layer <- ggplot2::geom_point(
@@ -101,33 +108,8 @@ if(is.null(substitute(shape))) {
       legend.background = ggplot2::element_rect(
         fill = "white",
         colour = "black"
-      )
-    )
+      ))
 
-
-#  scatterplot_uncorrelated <- ggplot2::ggplot(data) +
-#   ggplot2::aes (x = {{ x_var }}, y = {{ y_var }}) +
-#   ggplot2::geom_abline(
-#     intercept = 0
-#   , slope = 1
-#   , linetype = "22"
-#   , color = grey(0.7)
-#  ) +
-#   ggplot2::geom_point(
-#       ggplot2::aes(fill = ifelse({{ y_var}} > {{ x_var }}, "upper", "lower"))
-#     , shape = {{ shape }}
-#     , color = "white"
-#     , size = 3
-#   ) +
-#   ggplot2::scale_fill_manual(values = c(upper = upper_fill, lower = lower_fill)) +
-#   ggplot2::scale_shape_manuel(values = c(21, 22, 23, 24, 25)) +
-#   ggplot2::coord_equal(xlim = plot_range, ylim = plot_range) +
-#   ggplot2::labs(x = xlab, y = ylab) +
-#   ggplot2::guides(fill = "none") +
-#   ggplot2::theme(legend.position = legend_position,
-#                 legend.background = ggplot2::element_rect(
-#                    fill = "white",
-#                    colour = "black"))
 
 if (!show_legend) {
   scatterplot_uncorrelated <- scatterplot_uncorrelated +
@@ -148,14 +130,21 @@ if (!show_legend) {
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
-  diag_den <- ggplot2::ggplot(data) +
-    ggplot2::geom_path(ggplot2::aes(x = x, y = y), data = tibble::tibble(x = c(0, dnorm(0, mean =
-                                                                0.7, sd = 1) * 5), y = x), linetype = "22", color = grey(0.7)) +
-    ggplot2::geom_path(ggplot2::aes(x = x, y = y), data = tibble::tibble(x = c(-2.85, 2.75), y =
-                                                 c(2.85, -2.75)), size = 0.5) +
-    ggplot2::coord_fixed(clip = "off") +
-    ggplot2::theme_void() +
-    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
+# diag_den <- ggplot2::ggplot(density_df, ggplot2::aes(x = difference, y = density)) + ggplot2::geom_path() + ggplot2::theme_void()
+
+ diag_den <- ggplot2::ggplot(
+   density_df,
+   ggplot2::aes(x = x, y = y)) +
+   ggplot2::geom_path() +
+   ggplot2::geom_path(
+     ggplot2::aes(x = x, y = y),
+     data = tibble::tibble(
+       x = c(-2.85, 2.75),
+       y = c(2.85, -2.75)),
+     linewidth = 0.5) +
+   ggplot2::coord_fixed(clip = "off") +
+   ggplot2::theme_void() +
+   ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
   final_plot <- (x_den +
                    patchwork::plot_spacer() +
