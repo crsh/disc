@@ -32,7 +32,7 @@ create_plot <- function(data,
                         lower_fill = "black",
                         xlab = NULL,
                         ylab = NULL,
-                        legend_position = c(0.1, 0.16),
+                        legend_position = c(0.95, 0.05),
                         plot_range = NULL,
                         show_legend = TRUE
                         ) {
@@ -42,14 +42,6 @@ if(is.null(plot_range)) {
   range_y <- range(dplyr::pull(data, {{ y_var}}), na.rm = TRUE)
   plot_range <- range(c(range_x, range_y), na.rm = TRUE)
 }
-
-difference_scores <- (dplyr::pull(data, {{ y_var }}) - dplyr::pull(data, {{ x_var }})) / sqrt(2)
-difference_range <- range(difference_scores, na.rm = TRUE)
-density_data <- stats::density(difference_scores, na.rm = TRUE)
-density_df <- data.frame(difference = density_data$x, density = density_data$y)
-
-density_df$x <- density_df$difference + 3 * density_df$density / sqrt(2)
-density_df$y <- -density_df$difference + 3 * density_df$density / sqrt(2)
 
 if(is.null(substitute(shape))) {
     point_layer <- ggplot2::geom_point(
@@ -74,7 +66,7 @@ if(is.null(substitute(shape))) {
       values = c(21, 22, 23, 24, 25)
     )
    }
-  scatterplot_uncorrelated <- ggplot2::ggplot(data) +
+  scatterplot <- ggplot2::ggplot(data) +
     ggplot2::aes(
       x = {{ x_var }},
       y = {{ y_var }}
@@ -97,70 +89,130 @@ if(is.null(substitute(shape))) {
       xlim = plot_range,
       ylim = plot_range
     ) +
-    ggplot2::labs(
-      x = xlab,
-      y = ylab
-    ) +
     ggplot2::guides(
       fill = "none"
     ) +
     ggplot2::theme(
-      legend.position = legend_position,
+      legend.position = "inside",
+      legend.position.inside = legend_position,
+      legend.justification = c(1, 0),
       legend.background = ggplot2::element_rect(
         fill = "white",
         colour = "black"
-      ))
+      ),
+      plot.margin = ggplot2::margin(0, 0, 5.5, 5.5)
+    )
 
+if(!is.null(xlab)) {
+  scatterplot <- scatterplot +
+    ggplot2::xlab(xlab)
+}
+
+if(!is.null(ylab)) {
+  scatterplot <- scatterplot +
+    ggplot2::ylab(ylab)
+}
 
 if (!show_legend) {
-  scatterplot_uncorrelated <- scatterplot_uncorrelated +
+  scatterplot <- scatterplot +
     ggplot2::theme(legend.position = "none")
 }
 
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::lims(x = plot_range) +
+    ggplot2::coord_cartesian(xlim = plot_range) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.05))) +
     ggplot2::theme_void(base_size = 14) +
-    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
+    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 0, 2))
 
   y_den <- ggplot2::ggplot(data) +
     ggplot2::aes(y = {{ y_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::lims(y = plot_range) +
+    ggplot2::coord_cartesian(ylim = plot_range) +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.05))) +
     ggplot2::theme_void(base_size = 14) +
-    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
+    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 0))
+
+difference_scores <- (dplyr::pull(data, {{ y_var }}) - dplyr::pull(data, {{ x_var }})) / sqrt(2)
+density_data <- stats::density(difference_scores, na.rm = TRUE)
+density_df <- data.frame(difference = density_data$x, density = density_data$y)
+
+half_axis <- max(abs(density_df$difference)) / sqrt(2)
+
+density_df$x <- (-density_df$difference + half_axis * sqrt(2) * density_df$density) / sqrt(2)
+density_df$y <- (density_df$difference + half_axis * sqrt(2) * density_df$density) / sqrt(2)
+
+axis_df <- tibble::tibble(
+  x = c( half_axis, -half_axis),
+  y = c(-half_axis,  half_axis)
+)
+
+pos <- density_df[density_df$difference > 0, ]
+
+pos_poly_df <- data.frame(
+  x = c(0, pos$x, rev(-pos$difference / sqrt(2))),
+  y = c(0, pos$y, rev( pos$difference / sqrt(2)))
+)
+
+neg <- density_df[density_df$difference < 0, ]
+
+neg_poly_df <- data.frame(
+  x = c(0, neg$x, rev(-neg$difference / sqrt(2))),
+  y = c(0, neg$y, rev( neg$difference / sqrt(2)))
+)
+
+lim <- max(abs(c(density_df$x, density_df$y, axis_df$x, axis_df$y)))
 
  diag_den <- ggplot2::ggplot(
    density_df,
    ggplot2::aes(x = x, y = y)) +
+   ggplot2::geom_polygon(
+     fill = upper_fill,
+     alpha = 0.4,
+     data = pos_poly_df
+   ) +
+   ggplot2::geom_polygon(
+     fill = lower_fill,
+     alpha = 0.4,
+     data = neg_poly_df
+   ) +
+   ggplot2::annotate(
+     "segment",
+     x = 0,
+     y = 0,
+     xend = half_axis / sqrt(2),
+     yend = half_axis / sqrt(2),
+     linetype = "22",
+     color = grey(0.7)
+   ) +
    ggplot2::geom_path() +
    ggplot2::geom_path(
      ggplot2::aes(x = x, y = y),
-     data = tibble::tibble(
-       x = difference_range,
-       y = -difference_range),
-     linewidth = 0.5) +
-   ggplot2::coord_fixed(clip = "off") +
+     data = axis_df,
+     linewidth = 0.25) +
+   ggplot2::coord_fixed(xlim = c(-lim, lim), ylim = c(-lim, lim),
+                     expand = FALSE, clip = "off") +
    ggplot2::theme_void() +
    ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 2))
 
-  final_plot <- (x_den +
-                   patchwork::plot_spacer() +
-                   scatterplot_uncorrelated +
-                   y_den +
-                   patchwork::plot_layout(width = c(1, 0.3), height = c(0.3, 1))
-  ) |>
-    cowplot::ggdraw() +
+  inset_half <- 0.25  # half-width of the inset box, as a fraction of the scatter panel; tune for size
+
+  scatter_inset <- scatterplot +
     patchwork::inset_element(
-      diag_den
-      , left = 0.61 -0.025
-      , bottom = 0.61 -0.025
-      , right = 1 -0.025
-      , top = 1 -0.025
-      , align_to = "plot"
+      diag_den,
+      left = 1 - inset_half, bottom = 1 - inset_half,
+      right = 1 + inset_half, top = 1 + inset_half,
+      align_to = "panel", clip = FALSE
     )
+
+  final_plot <- ((x_den +
+                    patchwork::plot_spacer() +
+                    scatter_inset +
+                    y_den +
+                    patchwork::plot_layout(widths = c(1, inset_half), heights = c(inset_half, 1))
+  ) & ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))) |>
+    cowplot::ggdraw()
+
   plot_fixed(final_plot)
-
 }
-
