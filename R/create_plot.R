@@ -44,6 +44,7 @@ if(is.null(plot_range)) {
 }
 
 difference_scores <- (dplyr::pull(data, {{ y_var }}) - dplyr::pull(data, {{ x_var }})) / sqrt(2)
+difference_range <- range(difference_scores, na.rm = TRUE)
 density_data <- stats::density(difference_scores, na.rm = TRUE)
 density_df <- data.frame(difference = density_data$x, density = density_data$y)
 
@@ -137,8 +138,8 @@ if (!show_legend) {
    ggplot2::geom_path(
      ggplot2::aes(x = x, y = y),
      data = tibble::tibble(
-       x = c(-2.85, 2.75),
-       y = c(2.85, -2.75)),
+       x = difference_range,
+       y = -difference_range),
      linewidth = 0.5) +
    ggplot2::coord_fixed(clip = "off") +
    ggplot2::theme_void() +
