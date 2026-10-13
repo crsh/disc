@@ -118,19 +118,29 @@ if (!show_legend) {
     ggplot2::theme(legend.position = "none")
 }
 
+x_mean <- mean(dplyr::pull(data, {{ x_var }}), na.rm = TRUE)
+x_sd <- sd(dplyr::pull(data,{{ x_var }}), na.rm = TRUE)
+
   x_den <- ggplot2::ggplot(data) +
     ggplot2::aes(x = {{ x_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::coord_cartesian(xlim = plot_range) +
+    ggplot2::coord_cartesian(xlim = plot_range, clip = "off") +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.05))) +
+    ggplot2::annotate("segment", x = x_mean - x_sd,xend = x_mean + x_sd, y = 0, yend = 0, linewidth = 1.5) +
+    ggplot2::annotate("point", x = x_mean, y = 0, size = 3, color = "black") +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 0, 2))
+
+y_mean <- mean(dplyr::pull(data, {{ y_var }}), na.rm = TRUE)
+y_sd <- sd(dplyr::pull(data, {{ y_var }}), na.rm = TRUE)
 
   y_den <- ggplot2::ggplot(data) +
     ggplot2::aes(y = {{ y_var }}) +
     ggplot2::stat_density(color = "black", fill = NA) +
-    ggplot2::coord_cartesian(ylim = plot_range) +
+    ggplot2::coord_cartesian(ylim = plot_range, clip = "off") +
     ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = c(0, 0.05))) +
+    ggplot2::annotate("segment", y = y_mean - y_sd, yend = y_mean + y_sd, x = 0, xend = 0, linewidth = 1.5) +
+    ggplot2::annotate("point", y = y_mean, x = 0, size = 3, color = "black") +
     ggplot2::theme_void(base_size = 14) +
     ggplot2::theme(plot.margin = ggplot2::margin(2, 2, 2, 0))
 
@@ -164,6 +174,9 @@ neg_poly_df <- data.frame(
 
 lim <- max(abs(c(density_df$x, density_df$y, axis_df$x, axis_df$y)))
 
+diff_mean <- mean(difference_scores, na.rm = TRUE)
+diff_sd <- sd(difference_scores, na.rm = TRUE)
+
  diag_den <- ggplot2::ggplot(
    density_df,
    ggplot2::aes(x = x, y = y)) +
@@ -191,6 +204,21 @@ lim <- max(abs(c(density_df$x, density_df$y, axis_df$x, axis_df$y)))
      ggplot2::aes(x = x, y = y),
      data = axis_df,
      linewidth = 0.25) +
+    ggplot2::annotate(
+      "segment",
+      x = -(diff_mean - diff_sd)/sqrt(2),
+      xend = -(diff_mean + diff_sd)/sqrt(2),
+      y = (diff_mean - diff_sd)/sqrt(2),
+      yend = (diff_mean + diff_sd)/sqrt(2),
+      linewidth = 1.5
+    ) +
+    ggplot2::annotate(
+      "point",
+      x = -diff_mean/sqrt(2),
+      y = diff_mean/sqrt(2),
+      size = 3,
+      color = "black"
+    ) +
    ggplot2::coord_fixed(xlim = c(-lim, lim), ylim = c(-lim, lim),
                      expand = FALSE, clip = "off") +
    ggplot2::theme_void() +
@@ -206,11 +234,11 @@ lim <- max(abs(c(density_df$x, density_df$y, axis_df$x, axis_df$y)))
       align_to = "panel", clip = FALSE
     )
 
-  final_plot <- ((x_den +
+  final_plot <- ((scatter_inset +
+                    x_den +
                     patchwork::plot_spacer() +
-                    scatter_inset +
                     y_den +
-                    patchwork::plot_layout(widths = c(1, inset_half), heights = c(inset_half, 1))
+                    patchwork::plot_layout(widths = c(1, inset_half), heights = c(inset_half, 1), design = "BC\nAD")
   ) & ggplot2::theme(plot.margin = ggplot2::margin(0, 0, 0, 0))) |>
     cowplot::ggdraw()
 
