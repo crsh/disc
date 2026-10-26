@@ -24,7 +24,7 @@
 #' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange")
 #'
 #' # Achsenbeschriftung und Legendenposition
-#' c reate_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
+#' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
 #'
 #' # Vertikale Fehlerbalken
 #' create_plot(test_data, foo, bar, ymin = bar.lower, ymax = bar.upper, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
