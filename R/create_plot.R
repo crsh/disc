@@ -12,6 +12,10 @@
 #' @examples
 #'
 #' test_data <- data.frame(foo = rnorm(100), bar = rnorm(100), group = factor(rep(c("A", "B"), 50)))
+#' test_data$foo.lower <- test_data$foo - 0.5
+#' test_data$foo.upper <- test_data$foo + 0.5
+#' test_data$bar.lower <- test_data$bar - 0.5
+#' test_data$bar.upper <- test_data$bar + 0.5
 #'
 #' # Minimales Beispiel
 #' create_plot(test_data, foo, bar)
@@ -20,13 +24,23 @@
 #' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange")
 #'
 #' # Achsenbeschriftung und Legendenposition
-#' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.1, 0.16))
+#' create_plot(test_data, foo, bar, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
 #'
+#' # Vertikale Fehlerbalken
+#' create_plot(test_data, foo, bar, ymin = bar.lower, ymax = bar.upper, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
+#'
+#' # horizontale und vertikale Fehlerbalken
+#' create_plot(test_data, foo, bar, xmin = foo.lower, xmax = foo.upper, ymin = bar.lower, ymax = bar.upper, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
+
 
 
 create_plot <- function(data,
                         x_var,
                         y_var,
+                        xmin = NULL,
+                        xmax = NULL,
+                        ymin = NULL,
+                        ymax = NULL,
                         shape = NULL,
                         upper_fill = "firebrick",
                         lower_fill = "black",
@@ -102,6 +116,28 @@ if(is.null(substitute(shape))) {
       ),
       plot.margin = ggplot2::margin(0, 0, 5.5, 5.5)
     )
+
+if(!is.null(substitute(xmin)) && !is.null(substitute(xmax))) {
+  scatterplot <- scatterplot +
+    ggplot2::geom_errorbar(
+    ggplot2::aes(
+      xmin = {{ xmin }},
+      xmax = {{ xmax }}
+  ),
+  width = 0.1
+  )
+}
+
+if(!is.null(substitute(ymin)) && !is.null(substitute(ymax))) {
+  scatterplot <- scatterplot +
+   ggplot2::geom_errorbar(
+   ggplot2::aes(
+     ymin = {{ ymin }},
+     ymax = {{ ymax }}
+ ),
+ width = 0.1
+ )
+}
 
 if(!is.null(xlab)) {
   scatterplot <- scatterplot +
