@@ -280,3 +280,30 @@ diff_sd <- sd(difference_scores, na.rm = TRUE)
 
   plot_fixed(final_plot)
 }
+
+
+create_plot_original <- create_plot
+
+create_plot <- function(x, ...) {
+  UseMethod("create_plot")
+}
+
+
+create_plot.data.frame <- function(x, x_var, y_var, ...) {
+  result <- create_plot_original(
+    data = x,
+    x_var = {{ x_var }},
+    y_var = {{ y_var }},
+    ...
+  )
+
+  invisible(result)
+}
+
+
+create_plot.formula <- function(x, data, ...) {
+  dat <- model.frame(formula = x, data = data,
+                     ...
+                     )
+  create_plot(x = dat, x_var = {{ x_var }}, y_var = {{ y_var }})
+}
