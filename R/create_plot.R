@@ -31,10 +31,15 @@
 #'
 #' # horizontale und vertikale Fehlerbalken
 #' create_plot(test_data, foo, bar, xmin = foo.lower, xmax = foo.upper, ymin = bar.lower, ymax = bar.upper, shape = group, upper_fill = "blue", lower_fill = "orange", xlab = "Foo", ylab = "Bar", legend_position = c(0.18, 0.02))
+#'
+#' # S3 generic. Example using a formula (wide format)
+#' create_plot(bar ~ foo, data = test_data, upper_fill = "blue", lower_fill = "orange")
 
+create_plot <- function(x, ...) {
+  UseMethod("create_plot")
+}
 
-
-create_plot <- function(data,
+create_plot.data.frame <- function(data,
                         x_var,
                         y_var,
                         xmin = NULL,
@@ -50,6 +55,7 @@ create_plot <- function(data,
                         plot_range = NULL,
                         show_legend = TRUE
                         ) {
+
 
 if(is.null(plot_range)) {
   range_x <- range(dplyr::pull(data, {{ x_var}}), na.rm = TRUE)
@@ -282,28 +288,13 @@ diff_sd <- sd(difference_scores, na.rm = TRUE)
 }
 
 
-create_plot_original <- create_plot
-
-create_plot <- function(x, ...) {
-  UseMethod("create_plot")
-}
-
-
-create_plot.data.frame <- function(x, x_var, y_var, ...) {
-  result <- create_plot_original(
-    data = x,
-    x_var = {{ x_var }},
-    y_var = {{ y_var }},
-    ...
-  )
-
-  invisible(result)
-}
-
-
 create_plot.formula <- function(x, data, ...) {
-  dat <- model.frame(formula = x, data = data,
-                     ...
-                     )
-  create_plot(x = dat, x_var = {{ x_var }}, y_var = {{ y_var }})
+  dat <- model.frame(formula = x, data = data)
+  x_var <- rlang::sym(names(dat)[2])
+  y_var <- rlang::sym(names(dat)[1])
+  create_plot(dat, x_var = !!x_var, y_var = !!y_var, ...)
 }
+
+
+
+
