@@ -289,12 +289,35 @@ diff_sd <- sd(difference_scores, na.rm = TRUE)
 
 
 create_plot.formula <- function(x, data, ...) {
-  dat <- model.frame(formula = x, data = data)
-  x_var <- rlang::sym(names(dat)[2])
+  barterms <- reformulas::findbars(x)
+  if(length(barterms) > 1L) {
+    stop("Only allows one random effect term")
+  }
+  if(length(barterms) == 1L) {
+    id <- all.vars(barterms[[1]][[3]])
+
+    fixed_formula <- reformulas::nobars(x)
+
+    new_formula <- reformulate(
+      termlabels = c(all.vars(fixed_formula)[-1], id),
+      response = all.vars(fixed_formula)[1]
+    )
+
+    dat <- model.frame(formula = new_formula, data = data)
+
+    dat <- reshape2::dcast(
+      dat,
+      ID ~ group,
+      value.var = "extra"
+    )
+
+    y_var <- rlang::sym(names(dat)[3])
+  } else {
+  dat <- model.frame(formula = x, data = data)}
   y_var <- rlang::sym(names(dat)[1])
-  create_plot(dat, x_var = !!x_var, y_var = !!y_var, ...)
+
+x_var <- rlang::sym(names(dat)[2])
+create_plot(dat, x_var = !!x_var, y_var = !!y_var, ...)
 }
-
-
 
 

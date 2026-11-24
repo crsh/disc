@@ -14,7 +14,9 @@ Imports:
     patchwork,
     cowplot,
     tibble, 
-    dplyr
+    dplyr,
+    reformulas,
+    reshape2
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
