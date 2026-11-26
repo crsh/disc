@@ -34,6 +34,7 @@
 #'
 #' # S3 generic. Example using a formula (wide format)
 #' create_plot(bar ~ foo, data = test_data, upper_fill = "blue", lower_fill = "orange")
+#' create_plot(bar ~ foo, data = test_data, xmin = foo.lower, xmax = foo.upper, ymin = bar.lower, ymax = bar.upper, upper_fill = "blue", lower_fill = "orange")
 
 create_plot <- function(x, ...) {
   UseMethod("create_plot")
@@ -85,7 +86,32 @@ if(is.null(substitute(shape))) {
     shape_scale <- ggplot2::scale_shape_manual(
       values = c(21, 22, 23, 24, 25)
     )
-   }
+  }
+
+  if(!is.null(substitute(xmin)) && !is.null(substitute(xmax))) {
+    x_error_layer <- ggplot2::geom_errorbar(
+      ggplot2::aes(
+          xmin = {{ xmin }},
+          xmax = {{ xmax }}
+      ),
+      width = 0.1
+    )
+  } else {
+    x_error_layer <- NULL
+  }
+
+  if(!is.null(substitute(ymin)) && !is.null(substitute(ymax))) {
+    y_error_layer <- ggplot2::geom_errorbar(
+      ggplot2::aes(
+        ymin = {{ ymin }},
+        ymax = {{ ymax }}
+      ),
+      width = 0.1
+    )
+  } else {
+    y_error_layer <- NULL
+  }
+
   scatterplot <- ggplot2::ggplot(data) +
     ggplot2::aes(
       x = {{ x_var }},
@@ -97,6 +123,8 @@ if(is.null(substitute(shape))) {
       linetype = "22",
       color = grey(0.7)
     ) +
+    x_error_layer +
+    y_error_layer +
     point_layer +
     ggplot2::scale_fill_manual(
       values = c(
@@ -122,28 +150,6 @@ if(is.null(substitute(shape))) {
       ),
       plot.margin = ggplot2::margin(0, 0, 5.5, 5.5)
     )
-
-if(!is.null(substitute(xmin)) && !is.null(substitute(xmax))) {
-  scatterplot <- scatterplot +
-    ggplot2::geom_errorbar(
-    ggplot2::aes(
-      xmin = {{ xmin }},
-      xmax = {{ xmax }}
-  ),
-  width = 0.1
-  )
-}
-
-if(!is.null(substitute(ymin)) && !is.null(substitute(ymax))) {
-  scatterplot <- scatterplot +
-   ggplot2::geom_errorbar(
-   ggplot2::aes(
-     ymin = {{ ymin }},
-     ymax = {{ ymax }}
- ),
- width = 0.1
- )
-}
 
 if(!is.null(xlab)) {
   scatterplot <- scatterplot +
@@ -305,19 +311,19 @@ create_plot.formula <- function(x, data, ...) {
 
     dat <- model.frame(formula = new_formula, data = data)
 
-    dat <- reshape2::dcast(
+    dat <- tidyr::pivot_wider(
       dat,
-      ID ~ group,
-      value.var = "extra"
+      names_from = id,
+      values_from = all.vars(fixed_formula)[-1]
     )
 
     y_var <- rlang::sym(names(dat)[3])
   } else {
-  dat <- model.frame(formula = x, data = data)}
+    dat <- model.frame(formula = x, data = data)
+  }
+
   y_var <- rlang::sym(names(dat)[1])
-
-x_var <- rlang::sym(names(dat)[2])
-create_plot(dat, x_var = !!x_var, y_var = !!y_var, ...)
+  x_var <- rlang::sym(names(dat)[2])
+  
+  create_plot(dat, x_var = !!x_var, y_var = !!y_var, ...)
 }
-
-

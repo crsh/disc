@@ -15,8 +15,7 @@ Imports:
     cowplot,
     tibble, 
     dplyr,
-    reformulas,
-    reshape2
+    reformulas
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
